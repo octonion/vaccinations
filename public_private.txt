@@ -1,0 +1,1146 @@
+
+R version 3.1.1 (2014-07-10) -- "Sock it to Me"
+Copyright (C) 2014 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> 
+> library(lme4)
+> 
+> rates <- read.csv("data/cakd1314.csv", header=TRUE)
+> 
+> head(rates)
+  SCHOOL.CODE  COUNTY PUBLIC.PRIVATE             PUBLIC.SCHOOL.DISTRICT    CITY
+1      130419 ALAMEDA         PUBLIC ALAMEDA COUNTY OFFICE OF EDUCATION HAYWARD
+2      109835 ALAMEDA         PUBLIC ALAMEDA COUNTY OFFICE OF EDUCATION  NEWARK
+3      123968 ALAMEDA         PUBLIC ALAMEDA COUNTY OFFICE OF EDUCATION OAKLAND
+4     6001788 ALAMEDA         PUBLIC ALAMEDA COUNTY OFFICE OF EDUCATION OAKLAND
+5     6002000 ALAMEDA         PUBLIC ALAMEDA COUNTY OFFICE OF EDUCATION OAKLAND
+6      125567 ALAMEDA         PUBLIC ALAMEDA COUNTY OFFICE OF EDUCATION OAKLAND
+                              SCHOOL.NAME ENROLLMENT UP.TO.DATE. UP.TO.DATE..1
+1                ALAMEDA COUNTY COMMUNITY         NA          NA            NA
+2                     FAME PUBLIC CHARTER        131         102            78
+3 COMMUNITY SCHOOL FOR CREATIVE EDUCATION         41          32            78
+4                             COX ACADEMY        105          81            77
+5                  LAZEAR CHARTER ACADEMY         47          46            98
+6                URBAN MONTESSORI CHARTER         52          26            50
+  CONDITIONAL. CONDITIONAL..1 PME. PME..1 PBE. PBE..1 DTP. DTP..1 POLIO.
+1           NA             NA   NA     NA   NA     NA   NA     NA     NA
+2            0              0    0      0   29     22  102     78    102
+3            8             20    0      0    1      2   32     78     32
+4           24             23    0      0    0      0   84     80     94
+5            1              2    0      0    0      0   46     98     46
+6           24             46    0      0    2      4   30     58     29
+  POLIO..1 MMR. MMR..1 HEPB. HEPB..1 VARI. VARI..1 REPORTED
+1       NA   NA     NA    NA      NA    NA      NA        N
+2       78  102     78   102      78   102      78        Y
+3       78   32     78    32      78    32      78        Y
+4       90   91     87    98      93   100      95        Y
+5       98   47    100    46      98    47     100        Y
+6       56   31     60    33      63    39      75        Y
+> summary(rates)
+  SCHOOL.CODE                 COUNTY     PUBLIC.PRIVATE
+ Min.   : 100016   LOS ANGELES   :1874   PRIVATE:1649  
+ 1st Qu.:6016406   SAN DIEGO     : 548   PUBLIC :5732  
+ Median :6043806   ORANGE        : 540                 
+ Mean   :5546463   SAN BERNARDINO: 403                 
+ 3rd Qu.:6116404   SANTA CLARA   : 351                 
+ Max.   :7105125   RIVERSIDE     : 343                 
+                   (Other)       :3322                 
+           PUBLIC.SCHOOL.DISTRICT            CITY     
+                      :1648       LOS ANGELES  : 447  
+ LOS ANGELES UNIFIED  : 582       SAN DIEGO    : 217  
+ SAN DIEGO UNIFIED    : 142       SAN JOSE     : 175  
+ OAKLAND UNIFIED      :  73       SACRAMENTO   : 144  
+ SAN FRANCISCO UNIFIED:  73       SAN FRANCISCO: 138  
+ FRESNO UNIFIED       :  68       FRESNO       : 118  
+ (Other)              :4795       (Other)      :6142  
+                SCHOOL.NAME     ENROLLMENT      UP.TO.DATE.    
+ LINCOLN ELEMENTARY   :  32   Min.   : 10.00   Min.   :  0.00  
+ JEFFERSON ELEMENTARY :  25   1st Qu.: 41.00   1st Qu.: 34.00  
+ WASHINGTON ELEMENTARY:  25   Median : 74.00   Median : 66.00  
+ MCKINLEY ELEMENTARY  :  19   Mean   : 75.99   Mean   : 68.56  
+ ROOSEVELT ELEMENTARY :  19   3rd Qu.:104.00   3rd Qu.: 95.00  
+ FRANKLIN ELEMENTARY  :  16   Max.   :544.00   Max.   :350.00  
+ (Other)              :7245   NA's   :399      NA's   :399     
+ UP.TO.DATE..1     CONDITIONAL.     CONDITIONAL..1         PME.        
+ Min.   :  0.00   Min.   :  0.000   Min.   :  0.000   Min.   : 0.0000  
+ 1st Qu.: 85.00   1st Qu.:  0.000   1st Qu.:  0.000   1st Qu.: 0.0000  
+ Median : 93.00   Median :  2.000   Median :  3.000   Median : 0.0000  
+ Mean   : 88.77   Mean   :  4.931   Mean   :  7.036   Mean   : 0.1408  
+ 3rd Qu.: 98.00   3rd Qu.:  6.000   3rd Qu.:  9.000   3rd Qu.: 0.0000  
+ Max.   :100.00   Max.   :127.000   Max.   :100.000   Max.   :19.0000  
+ NA's   :399      NA's   :399       NA's   :399       NA's   :399      
+     PME..1             PBE.             PBE..1             DTP.      
+ Min.   : 0.0000   Min.   :  0.000   Min.   :  0.000   Min.   :  0.0  
+ 1st Qu.: 0.0000   1st Qu.:  0.000   1st Qu.:  0.000   1st Qu.: 36.0  
+ Median : 0.0000   Median :  1.000   Median :  1.000   Median : 68.0  
+ Mean   : 0.2031   Mean   :  2.351   Mean   :  4.011   Mean   : 70.1  
+ 3rd Qu.: 0.0000   3rd Qu.:  3.000   3rd Qu.:  5.000   3rd Qu.: 96.0  
+ Max.   :45.0000   Max.   :127.000   Max.   :100.000   Max.   :395.0  
+ NA's   :399       NA's   :399       NA's   :399       NA's   :399    
+     DTP..1           POLIO.          POLIO..1           MMR.       
+ Min.   :  0.00   Min.   :  0.00   Min.   :  0.00   Min.   :  0.00  
+ 1st Qu.: 89.00   1st Qu.: 36.00   1st Qu.: 89.00   1st Qu.: 36.00  
+ Median : 95.00   Median : 68.00   Median : 95.00   Median : 68.00  
+ Mean   : 91.04   Mean   : 70.44   Mean   : 91.39   Mean   : 70.21  
+ 3rd Qu.: 98.00   3rd Qu.: 97.00   3rd Qu.: 99.00   3rd Qu.: 97.00  
+ Max.   :100.00   Max.   :381.00   Max.   :100.00   Max.   :381.00  
+ NA's   :399      NA's   :399      NA's   :399      NA's   :399     
+     MMR..1        HEPB.           HEPB..1           VARI.       
+ Min.   :  0   Min.   :  0.00   Min.   :  0.00   Min.   :  0.00  
+ 1st Qu.: 89   1st Qu.: 37.00   1st Qu.: 92.00   1st Qu.: 37.00  
+ Median : 95   Median : 70.00   Median : 97.00   Median : 71.00  
+ Mean   : 91   Mean   : 72.06   Mean   : 93.71   Mean   : 72.44  
+ 3rd Qu.: 98   3rd Qu.: 99.00   3rd Qu.: 99.00   3rd Qu.: 99.00  
+ Max.   :100   Max.   :387.00   Max.   :100.00   Max.   :374.00  
+ NA's   :399   NA's   :399      NA's   :399      NA's   :399     
+    VARI..1      REPORTED
+ Min.   :  0.0   N: 400  
+ 1st Qu.: 93.0   Y:6981  
+ Median : 97.0           
+ Mean   : 94.2           
+ 3rd Qu.:100.0           
+ Max.   :100.0           
+ NA's   :399             
+> colnames(rates)
+ [1] "SCHOOL.CODE"            "COUNTY"                 "PUBLIC.PRIVATE"        
+ [4] "PUBLIC.SCHOOL.DISTRICT" "CITY"                   "SCHOOL.NAME"           
+ [7] "ENROLLMENT"             "UP.TO.DATE."            "UP.TO.DATE..1"         
+[10] "CONDITIONAL."           "CONDITIONAL..1"         "PME."                  
+[13] "PME..1"                 "PBE."                   "PBE..1"                
+[16] "DTP."                   "DTP..1"                 "POLIO."                
+[19] "POLIO..1"               "MMR."                   "MMR..1"                
+[22] "HEPB."                  "HEPB..1"                "VARI."                 
+[25] "VARI..1"                "REPORTED"              
+> 
+> fit <- glmer(cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY) + (1|CITY) + PUBLIC.PRIVATE, data=rates, family="binomial")
+> 
+> fit
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: cbind(PBE., ENROLLMENT - PBE.) ~ (1 | COUNTY) + (1 | CITY) +  
+    PUBLIC.PRIVATE
+   Data: rates
+      AIC       BIC    logLik  deviance  df.resid 
+ 33711.91  33739.32 -16851.96  33703.91      6978 
+Random effects:
+ Groups Name        Std.Dev.
+ CITY   (Intercept) 1.2935  
+ COUNTY (Intercept) 0.9853  
+Number of obs: 6982, groups:  CITY, 897; COUNTY, 58
+Fixed Effects:
+         (Intercept)  PUBLIC.PRIVATEPUBLIC  
+              -2.984                -0.616  
+> summary(fit)
+Generalized linear mixed model fit by maximum likelihood (Laplace
+  Approximation) [glmerMod]
+ Family: binomial  ( logit )
+Formula: cbind(PBE., ENROLLMENT - PBE.) ~ (1 | COUNTY) + (1 | CITY) +  
+    PUBLIC.PRIVATE
+   Data: rates
+
+     AIC      BIC   logLik deviance df.resid 
+ 33711.9  33739.3 -16852.0  33703.9     6978 
+
+Scaled residuals: 
+   Min     1Q Median     3Q    Max 
+-7.296 -1.004 -0.532  0.499 37.439 
+
+Random effects:
+ Groups Name        Variance Std.Dev.
+ CITY   (Intercept) 1.6731   1.2935  
+ COUNTY (Intercept) 0.9707   0.9853  
+Number of obs: 6982, groups:  CITY, 897; COUNTY, 58
+
+Fixed effects:
+                     Estimate Std. Error z value Pr(>|z|)    
+(Intercept)          -2.98355    0.14926  -19.99   <2e-16 ***
+PUBLIC.PRIVATEPUBLIC -0.61604    0.02594  -23.75   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr)
+PUBLIC.PRIV -0.160
+> 
+> fixef(fit)
+         (Intercept) PUBLIC.PRIVATEPUBLIC 
+          -2.9835477           -0.6160354 
+> ranef(fit)
+$CITY
+                           (Intercept)
+ACAMPO                     0.419835535
+ACTON                      1.660978433
+ADELANTO                  -0.726063227
+AGOURA                     1.880051467
+AGOURA HILLS               1.221180507
+AGUA DULCE                 0.375115919
+AGUANGA                   -0.473640489
+AHWAHNEE                   0.268765921
+ALAMEDA                    0.999004811
+ALAMO                     -1.204388217
+ALBANY                    -0.136318319
+ALHAMBRA                  -0.958913779
+ALISO VIEJO                1.511206416
+ALPAUGH                   -0.206834278
+ALPINE                     1.060021962
+ALTA                       0.864593130
+ALTADENA                   0.814510461
+ALTA LOMA                  0.361063507
+ALTURAS                    1.399307706
+ALVISO                    -0.897979775
+AMERICAN CANYON           -1.475484663
+ANAHEIM                   -1.016505382
+ANAHEIM HILLS              0.001688165
+ANDERSON                  -0.284646420
+ANGELS CAMP                0.463067946
+ANGWIN                    -0.847213274
+ANNAPOLIS                 -0.503882020
+ANTELOPE                   0.944752327
+ANTIOCH                    0.179287017
+ANZA                       0.919040856
+APPLE VALLEY               0.495944516
+APTOS                      0.840286828
+ARBUCKLE                  -0.696373645
+ARCADIA                   -1.210832104
+ARCATA                     1.628597287
+ARLETA                    -2.054971077
+ARMONA                    -0.997468866
+ARNOLD                     1.145811524
+AROMAS                     0.334407154
+ARROYO GRANDE              0.148090861
+ARTESIA                   -0.449051317
+ARVIN                     -2.337582675
+ATASCADERO                 0.145191894
+ATHERTON                   0.178610357
+ATWATER                    0.128704179
+AUBURN                    -0.303951933
+AVENAL                    -1.417314434
+AVOCADO HEIGHTS           -0.586968855
+AZUSA                     -1.428717043
+BAKER                     -0.501098193
+BAKERSFIELD               -0.032695696
+BALDWIN PARK              -1.519894663
+BANGOR                     0.058551112
+BANNING                   -1.218001183
+BARSTOW                    0.042274980
+BAY POINT                 -1.556346315
+BAYSIDE                    0.271863988
+BEALE AFB                 -0.375506263
+BEALE AIR FORCE BASE      -0.989433073
+BEAUMONT                   1.075231185
+BELL                      -2.420644360
+BELLA VISTA                0.451716834
+BELLFLOWER                -0.350906316
+BELL GARDENS              -2.161893715
+BELMONT                    0.349354983
+BENICIA                   -0.001202090
+BEN LOMOND                 2.915389596
+BERKELEY                   0.903411172
+BERMUDA DUNES              0.561950531
+BEVERLY HILLS              1.182748291
+BIEBER                    -0.400450528
+BIG BEAR LAKE              1.111505038
+BIGGS                      0.357001709
+BIG PINE                   1.171607734
+BIG SUR                    3.278636138
+BISHOP                    -1.279224380
+BLOOMINGTON               -1.277380590
+BLUE LAKE                 -0.944305164
+BLYTHE                     0.347001305
+BOLINAS                    1.648743429
+BONITA                     0.303122020
+BONSALL                    0.419234140
+BOONVILLE                 -1.298577228
+BORON                      0.846495844
+BORREGO SPRINGS           -0.799941916
+BOULDER CREEK              0.147418264
+BOULEVARD                  0.439601603
+BRAWLEY                   -0.337105942
+BREA                      -0.717552001
+BRENTWOOD                  0.803530545
+BRISBANE                  -0.484090407
+BROWNS VALLEY              0.596704010
+BUELLTON                   0.777276285
+BUENA PARK                -1.269858061
+BURBANK                   -0.220703362
+BURLINGAME                 0.359395117
+BURNEY                     0.472925182
+BURNT RANCH                1.536680835
+CABAZON                   -0.152414530
+CALABASAS                  0.979366129
+CALEXICO                  -1.492486228
+CALIFORNIA CITY           -1.621213687
+CALIMESA                   0.118018558
+CALIPATRIA                -0.501066433
+CALISTOGA                  0.331420789
+CALPELLA                   3.163012173
+CAMARILLO                  3.043816069
+CAMBRIA                   -0.321799394
+CAMERON PARK               3.589058312
+CAMINO                     2.120608927
+CAMPBELL                   0.238141134
+CAMPO                      0.664565896
+CANOGA PARK               -0.684640032
+CANTUA CREEK              -0.329037378
+CANYON COUNTRY             0.970136887
+CAPISTRANO BEACH           1.190469238
+CAPITOLA                  -0.021862467
+CARDIFF-BY-THE-SEA         1.807936579
+CARLSBAD                   1.123784978
+CARMEL                     0.723134933
+CARMEL VALLEY              2.082397534
+CARMICHAEL                 0.840599428
+CARPINTERIA                1.094640572
+CARSON                    -1.548616728
+CARUTHERS                 -0.974455445
+CASTAIC                    0.013415592
+CASTRO VALLEY              0.051789609
+CASTROVILLE               -0.889199257
+CATHEDRAL CITY            -1.258975698
+CAYUCOS                    0.706407886
+CEDARVILLE                -0.379243079
+CERES                     -0.608053761
+CERRITOS                  -1.123255757
+CHALLENGE                 -0.456200987
+CHATSWORTH                 0.103435587
+CHERRY VALLEY             -0.838013449
+CHESTER                    0.446986132
+CHICO                      0.474880288
+CHINO                     -0.065354725
+CHINO HILLS               -0.254007544
+CHOWCHILLA                -1.059515976
+CHUALAR                   -0.728475942
+CHULA VISTA               -0.627691084
+CITRUS HEIGHTS            -0.109105885
+CITY OF COMMERCE          -1.096252613
+CLAREMONT                  1.096422075
+CLARKSBURG                -0.489535661
+CLAYTON                    0.636069290
+CLEARLAKE                 -0.916268954
+CLEARLAKE OAKS            -0.757092527
+CLOVERDALE                -0.101145774
+CLOVIS                     1.191327249
+COACHELLA                 -2.059979600
+COALINGA                  -1.194393763
+COARSEGOLD                -0.597921408
+COLEVILLE                 -0.619427543
+COLFAX                     0.897991274
+COLMA                     -1.046958944
+COLTON                    -0.953128505
+COLUMBIA                   0.539227842
+COLUSA                    -0.922190337
+COMPTON                   -2.464592867
+CONCORD                   -0.330569525
+COOL                       2.301468772
+COPPEROPOLIS              -0.395691363
+CORCORAN                  -1.532686324
+CORNING                   -0.429445639
+CORONA                     0.071997069
+CORONA DEL MAR             1.304020698
+CORONADO                   0.581126334
+CORRALITOS                 0.234627659
+CORTE MADERA               0.020943214
+COSTA MESA                 0.446008709
+COTATI                    -0.687429284
+COTO DE CAZA              -1.286873105
+COTTONWOOD                 0.444836164
+COURTLAND                 -0.926270951
+COVELO                     0.071818115
+COVINA                    -0.298732852
+CRESCENT CITY             -0.050108718
+CRESSEY                   -0.506965511
+CRESTLINE                  0.065545977
+CRESTON                   -0.930894703
+CROWS LANDING              0.457796061
+CUDAHY                    -2.488717303
+CULVER CITY                0.303396866
+CUPERTINO                 -0.858129062
+CUTLER                    -0.586360501
+CYPRESS                   -0.998616491
+DALY CITY                 -2.301988475
+DANA POINT                 0.974234856
+DANVILLE                  -0.079917640
+DAVENPORT                  1.728251149
+DAVIS                      0.414666258
+DELANO                    -1.948870683
+DELHI                     -1.226959956
+DEL MAR                    0.433370186
+DEL REY                   -0.557389900
+DENAIR                     1.171542224
+DESCANSO                   0.190512425
+DESERT HOT SPRINGS        -1.558864150
+DIAMOND BAR               -0.903214759
+DINUBA                    -0.055477399
+DISCOVERY BAY              0.084939515
+DIXON                      0.190882768
+DOBBINS                   -0.314779844
+DORRIS                    -1.289496034
+DOS PALOS                 -0.150118684
+DOUGLAS CITY               0.283239224
+DOWNEY                    -2.234160072
+DOYLE                      0.786795977
+DUARTE                    -0.744373931
+DUBLIN                     0.248914464
+DUCOR                     -0.176433657
+DUNLAP                     0.482041803
+DUNSMUIR                   1.528593143
+DURHAM                     1.231989724
+EARLIMART                 -0.927935457
+EAST NICOLAUS             -0.417175814
+EAST PALO ALTO            -1.516389354
+EASTVALE                   0.063269575
+EDGEWOOD                  -1.190720433
+EDWARDS                   -0.441793775
+EL CAJON                  -0.186047369
+EL CENTRO                  0.849767433
+EL CERRITO                 1.251396381
+EL DORADO                  4.650233268
+EL DORADO HILLS            3.324701067
+EL GRANADA                -0.498961048
+ELK GROVE                 -0.878249138
+EL MONTE                  -2.287131484
+EL NIDO                   -0.297781207
+EL PORTAL                  0.874714047
+EL SEGUNDO                -0.035233369
+EL SOBRANTE                1.524239034
+ELVERTA                   -0.163350931
+EMERYVILLE                -0.111658652
+EMPIRE                    -0.422879635
+ENCINITAS                  1.256268174
+ENCINO                     0.516943709
+ESCALON                    0.069580893
+ESCONDIDO                  0.853695726
+ESPARTO                    0.012244844
+ETIWANDA                   0.197801913
+ETNA                       0.351297455
+EUREKA                    -0.205485748
+EXETER                    -0.851469849
+FAIRFAX                    1.009097240
+FAIRFIELD                 -0.603013993
+FAIR OAKS                  0.506314304
+FALLBROOK                  0.685212089
+FALL RIVER MILLS          -1.275249686
+FARMERSVILLE              -0.726546590
+FARMINGTON                -0.309071900
+FELLOWS                   -0.422308337
+FELTON                     1.626171910
+FERNDALE                   0.876629719
+FILLMORE                   0.416543634
+FIREBAUGH                 -1.233000037
+FIVE POINTS               -0.387948528
+FOLSOM                    -0.142104292
+FONTANA                   -0.957427143
+FOOTHILL RANCH             0.517639132
+FOREST FALLS              -0.393219832
+FORESTHILL                 0.083904030
+FOREST RANCH               0.099765266
+FORESTVILLE                0.195823896
+FORT BRAGG                -0.754624033
+FORT IRWIN                -0.992665546
+FORT JONES                 0.136367470
+FORTUNA                   -0.420862692
+FOSTER CITY               -0.540265580
+FOUNTAIN VALLEY           -0.550646835
+FOWLER                    -0.522336181
+FRAZIER PARK               1.285657218
+FREEDOM                   -1.599288162
+FREMONT                   -0.340779245
+FRENCH CAMP               -0.960683736
+FRESNO                     0.114848125
+FULLERTON                 -0.187308790
+GALT                      -0.245222525
+GARDENA                   -1.563024179
+GARDEN GROVE              -1.320632792
+GAVIOTA                    0.132136129
+GEORGETOWN                 3.813945363
+GERBER                    -0.630006458
+GEYSERVILLE               -0.817078138
+GILROY                    -0.736900725
+GLENDALE                  -0.417471356
+GLENDORA                  -0.023595447
+GLEN ELLEN                -1.222424550
+GOLD RIVER                -0.874613480
+GOLETA                     0.673924485
+GONZALES                  -1.438790346
+GRANADA HILLS             -0.522698947
+GRAND TERRACE              0.289791116
+GRANITE BAY                0.810809897
+GRASS VALLEY               0.039909771
+GREENFIELD                -1.887707024
+GREENVILLE                -0.154719130
+GRENADA                   -1.049998389
+GRIDLEY                   -0.605891248
+GRIMES                    -0.152450650
+GROVELAND                  0.974950337
+GROVER BEACH               0.457714669
+GUADALUPE                 -0.993920598
+GUERNEVILLE               -0.275217096
+GUSTINE                   -0.201727116
+HACIENDA HEIGHTS          -0.426006595
+HALF MOON BAY              0.373608126
+HAMILTON CITY             -0.090207172
+HANFORD                   -0.879302986
+HAPPY CAMP                -0.160725849
+HARBOR CITY               -1.024010680
+HAWAIIAN GARDENS          -1.476757220
+HAWTHORNE                 -1.860349288
+HAYFORK                    0.598016566
+HAYWARD                   -1.487601496
+HEALDSBURG                -0.069501574
+HEBER                     -0.683292259
+HELENDALE                  2.070925171
+HEMET                      0.000721568
+HERALD                    -0.441289079
+HERCULES                  -1.384019437
+HERLONG                   -0.481128194
+HERMOSA BEACH              0.139995872
+HESPERIA                  -0.289325738
+HICKMAN                    2.414673416
+HIGHLAND                  -0.407848831
+HILLSBOROUGH              -0.422586760
+HILMAR                     0.694849872
+HOLLISTER                 -0.626007105
+HOLLYWOOD                 -0.521303803
+HOLTVILLE                 -0.578469541
+HOOPA                     -1.695687685
+HUGHSON                   -0.626323692
+HUNTINGTON BEACH           0.481215730
+HUNTINGTON PARK           -2.321869105
+HURON                     -1.121862381
+HYDESVILLE                -0.252715590
+IDYLLWILD                  1.215468771
+IMPERIAL                  -0.459017120
+IMPERIAL BEACH            -0.203588879
+INDIAN WELLS               0.026844162
+INDIO                     -0.300644123
+INGLEWOOD                 -1.994853753
+INVERNESS                  0.277941822
+INYOKERN                   0.716029675
+IONE                       0.007761571
+IRVINE                     0.181457840
+ISLETON                   -0.163350931
+IVANHOE                   -0.463795618
+JACKSON                    0.789774808
+JAMESTOWN                  1.168891759
+JAMUL                      1.225416014
+JANESVILLE                -0.015142825
+JOSHUA TREE                0.380312176
+JULIAN                     2.663965403
+JURUPA VALLEY             -1.321294982
+KELSEYVILLE               -0.081378314
+KENSINGTON                 1.490309445
+KENTFIELD                 -0.840912819
+KENWOOD                    0.014555843
+KERMAN                    -1.587463861
+KERNVILLE                 -0.679305717
+KETTLEMAN CITY            -0.537647098
+KEYES                      0.780859793
+KING CITY                 -0.648485714
+KINGS BEACH                0.284700437
+KINGSBURG                  1.066707403
+KINGVALE                   0.353405301
+KLAMATH                    2.455781552
+KNIGHTSEN                 -0.749108653
+KNIGHTS FERRY              1.265772085
+KNIGHTS LANDING            1.000153535
+LA CAÃ‘ADA                 0.769859052
+LA CANADA                  0.188455054
+LA CRESCENTA               0.002811680
+LADERA RANCH               1.260036538
+LAFAYETTE                  1.086855603
+LAGUNA BEACH               1.441033637
+LAGUNA HILLS               1.499951371
+LAGUNA NIGUEL              0.392514682
+LA HABRA                  -0.127633723
+LA HONDA                   0.751938492
+LA JOLLA                   0.817722795
+LAKE ARROWHEAD             0.471847567
+LAKE BALBOA                3.975172412
+LAKE ELSINORE              0.475994905
+LAKE FOREST                0.345727824
+LAKE HUGHES                2.295637669
+LAKE ISABELLA             -1.345167568
+LAKE MATHEWS               4.677031865
+LAKEPORT                  -0.667245485
+LAKESIDE                   0.454097575
+LAKE VIEW TERRACE          0.885113461
+LAKEWOOD                  -0.680548893
+LA MESA                    0.393262959
+LA MIRADA                 -0.961871549
+LAMONT                    -1.723068781
+LANCASTER                 -0.170768619
+LANDERS                   -0.460244611
+LA PALMA                  -0.516452971
+LA PUENTE                 -2.142526851
+LA QUINTA                  0.261325145
+LARKSPUR                  -0.023055947
+LATHROP                   -1.217463965
+LATON                     -0.706665792
+LA VERNE                  -0.022242129
+LAWNDALE                  -1.044472970
+LAYTONVILLE                1.351116787
+LE GRAND                   0.480561104
+LEMON GROVE               -0.787487249
+LEMOORE                    0.280009283
+LENNOX                    -2.507119374
+LENWOOD                    0.377881810
+LEONA VALLEY               0.508707356
+LEWISTON                  -0.104098603
+LINCOLN                    0.780630095
+LINDEN                     0.111549167
+LINDSAY                   -1.076130506
+LITCHFIELD                -0.692179412
+LITTLEROCK                -0.109650791
+LIVE OAK                  -0.420232414
+LIVERMORE                  0.313554250
+LIVINGSTON                -0.398982833
+LOCKEFORD                  0.592393148
+LOCKWOOD                  -0.352274095
+LODI                      -0.821530104
+LOLETA                    -0.866025741
+LOMA LINDA                -0.060351804
+LOMITA                    -0.723453150
+LOMPOC                    -0.964877923
+LONE PINE                 -0.478408454
+LONG BEACH                -0.611902368
+LOOMIS                     0.513426193
+LOS ALAMITOS               0.160375491
+LOS ALAMOS                -0.324317367
+LOS ALTOS                  1.073109172
+LOS ALTOS HILLS           -0.927771437
+LOS ANGELES               -0.706628716
+LOS BANOS                  0.002865379
+LOS GATOS                  0.805038476
+LOS MOLINOS               -0.560282158
+LOS OLIVOS                 1.045612057
+LOS OSOS                   0.594987258
+LOST HILLS                -1.226715164
+LOWER LAKE                -1.325306389
+LOYALTON                  -0.483660603
+LUCERNE                    1.415419980
+LUCERNE VALLEY            -1.004644275
+LYNWOOD                   -2.640825049
+MADERA                    -1.462581300
+MAGALIA                    0.160926883
+MALIBU                     2.386105487
+MAMMOTH LAKES              0.961819802
+MANHATTAN BEACH            0.385870968
+MANTECA                   -0.327126007
+MARICOPA                  -0.005138116
+MARINA                     0.072403262
+MARINA DEL REY            -0.535299775
+MARIPOSA                   0.609751175
+MARKLEEVILLE               0.511942320
+MARTINEZ                   0.533476334
+MARYSVILLE                 1.006125145
+MATHER                     0.170021672
+MAXWELL                   -0.302950385
+MAYWOOD                   -1.165425373
+MCCLELLAN                  3.256899732
+MCCLOUD                    0.705339716
+MCFARLAND                 -2.011403762
+MCKINLEYVILLE              0.088079545
+MEADOW VISTA              -0.172709878
+MECCA                     -1.785394099
+MENDOCINO                  1.160195489
+MENDOTA                   -1.488148064
+MENIFEE                    0.630045967
+MENLO PARK                 0.449749676
+MENTONE                    0.999653780
+MERCED                    -0.102449382
+MIDDLETOWN                 1.525021318
+MIDWAY CITY               -1.506388441
+MILLBRAE                  -0.887810172
+MILL VALLEY               -0.041912334
+MILLVILLE                  1.166379698
+MILPITAS                  -0.754186393
+MISSION HILLS             -1.375343767
+MISSION VIEJO              0.847526187
+MODESTO                   -0.303520010
+MOJAVE                    -0.027332699
+MONROVIA                  -0.115041520
+MONTAGUE                   0.900372161
+MONTARA                    0.607431999
+MONTCLAIR                 -1.410421035
+MONTEBELLO                -1.694888792
+MONTEREY                  -0.064107592
+MONTEREY PARK             -0.576429997
+MONTE RIO                  1.836704084
+MONTROSE                  -0.613994431
+MOORPARK                   3.093734094
+MORAGA                     0.350529351
+MORENO VALLEY             -0.600237919
+MORGAN HILL               -0.195790386
+MORONGO VALLEY             1.517614377
+MORRO BAY                  0.772953280
+MOUNTAIN HOUSE            -0.775724297
+MOUNTAIN VIEW              0.770931426
+MOUNT SHASTA               1.108819727
+MT. BALDY                  2.434576799
+MURPHYS                    0.113608388
+MURRIETA                   1.010665238
+MURRIETTA                  1.310157311
+NAPA                       0.352564173
+N.A.S. LEMOORE            -0.144083076
+NATIONAL CITY             -2.166314045
+NEEDLES                    1.217306728
+NEVADA CITY                1.913605552
+NEWARK                     0.829294705
+NEWBERRY SPRINGS          -0.641721789
+NEWBURY PARK               2.936725282
+NEWCASTLE                  1.261035221
+NEW CUYAMA                -0.144929341
+NEWHALL                    0.387190170
+NEWMAN                    -0.986587163
+NEWPORT BEACH              0.625800546
+NILAND                    -0.185623232
+NIPOMO                    -0.001067031
+NORCO                      0.162032087
+NORTH FORK                 1.098207834
+NORTH HIGHLANDS           -0.766572073
+NORTH HILLS               -0.785939091
+NORTH HOLLYWOOD           -0.404871635
+NORTHRIDGE                 0.353713642
+NORTH TUSTIN               0.350064201
+NORWALK                   -1.368690447
+NOVATO                    -0.857653044
+NUEVO                     -0.490689270
+OAKDALE                   -0.271748664
+OAKHURST                   1.423343876
+OAKLAND                   -0.743096729
+OAKLEY                     0.813537380
+OAK PARK                   3.229165013
+OAK VIEW                   3.651652504
+OCCIDENTAL                 2.134907227
+OCEANO                    -0.195370221
+OCEANSIDE                  0.290841226
+OJAI                       3.763083342
+OLIVEHURST                -0.489746301
+O'NEALS                    1.620956727
+ONTARIO                   -1.433336427
+ORANGE                    -0.587563903
+ORANGE COVE               -1.247858171
+ORANGEVALE                 0.470377175
+ORCUTT                     0.377371348
+ORINDA                     0.670292599
+ORLAND                    -0.712377171
+ORLEANS                   -0.710522821
+ORO GRANDE                -0.495212356
+OROSI                     -0.915181519
+OROVILLE                  -0.739803890
+OXNARD                     0.272261572
+PACIFICA                   0.350022060
+PACIFIC GROVE              1.760174502
+PACIFIC PALISADES          1.374404713
+PACOIMA                   -2.519378873
+PACOMIA                   -1.699513971
+PALA                      -0.618720017
+PALMDALE                  -0.361399973
+PALM DESERT                0.509273272
+PALM SPRINGS              -1.384671439
+PALO ALTO                  0.343293212
+PALO CEDRO                 1.005499121
+PALOS VERDES ESTATES       0.932710180
+PALOS VERDES PENINSULA    -1.054008243
+PANORAMA CITY             -1.751629420
+PARADISE                   0.332807093
+PARAMOUNT                 -1.033387454
+PARLIER                   -0.607044797
+PASADENA                  -0.056391044
+PASO ROBLES               -0.552671060
+PATTERSON                 -2.137945181
+PAUMA VALLEY              -0.838250323
+PEARBLOSSOM               -0.848420640
+PENNGROVE                  0.758072564
+PENN VALLEY               -0.002899890
+PENRYN                    -0.701315362
+PERRIS                    -0.979439509
+PESCADERO                 -0.543493211
+PETALUMA                   0.324441527
+PETROLIA                   2.518835922
+PHELAN                     0.863651386
+PICO RIVERA               -0.952348817
+PIEDMONT                   0.874085341
+PINEDALE                  -0.423706990
+PINE MOUNTAIN CLUB         1.425528875
+PINOLE                    -0.093246202
+PINON HILLS               -1.073030938
+PIONEER                   -0.352088378
+PIRU                      -0.219608972
+PISMO BEACH                0.275681470
+PITTSBURG                 -1.349251053
+PIXLEY                    -0.577039467
+PLACENTIA                 -0.331508853
+PLACERVILLE                3.549041942
+PLANADA                   -0.785889713
+PLAYA DEL REY              0.726131938
+PLAYA VISTA                1.444399188
+PLEASANT GROVE             0.043548701
+PLEASANT HILL              0.519624704
+PLEASANTON                 0.267166945
+PLUMAS LAKE                0.041480531
+PLYMOUTH                   0.081197148
+POINT ARENA               -0.963829956
+POLLOCK PINES              2.505919759
+POMONA                    -2.175310152
+PORTER RANCH              -0.123786411
+PORTERVILLE                0.495664723
+PORT HUENEME               0.436514974
+PORTOLA                    0.232521425
+PORTOLA VALLEY            -0.152644663
+POTRERO                   -0.065624901
+POTTER VALLEY             -0.819677127
+POWAY                      0.038370384
+PRATHER                    2.804964000
+PRINCETON                  0.841647360
+QUAIL VALLEY               0.450899960
+QUARTZ HILL                0.004463119
+QUINCY                     0.943029470
+RAIL ROAD FLAT             0.895366300
+RAINBOW                   -0.759225132
+RAISIN CITY               -0.598206244
+RAMONA                     0.642797307
+RANCHO CORDOVA             0.005898992
+RANCHO CUCAMONGA          -0.500574867
+RANCHO MIRAGE             -0.013301137
+RANCHO PALOS VERDES        0.578765137
+RANCHO SANTA FE            1.580107861
+RANCHO SANTA MARGARITA     0.586325821
+RAYMOND                   -0.457021468
+RED BLUFF                 -0.248171120
+REDDING                    0.545213270
+REDLANDS                   0.727855946
+REDONDO BEACH              0.955735137
+REDWOOD CITY              -0.520754910
+REEDLEY                   -0.938722195
+RESCUE                     3.144849373
+RESEDA                    -0.861794172
+RIALTO                    -1.044027193
+RICHGROVE                 -0.486031534
+RICHMOND                  -1.199390702
+RIDGECREST                 0.406031554
+RIO DELL                  -0.247611939
+RIO LINDA                  0.241217494
+RIO OSO                   -0.638452368
+RIO VISTA                 -0.489535661
+RIPON                      1.165845457
+RIVERBANK                 -0.582827118
+RIVERDALE                 -0.351505821
+RIVERSIDE                 -0.455114119
+ROBBINS                   -0.716157404
+ROCKLIN                    0.492279945
+RODEO                     -1.447333673
+ROHNERT PARK              -0.130867607
+ROLLING HILLS ESTATES      0.540035869
+ROMOLAND                  -0.329938163
+ROSAMOND                  -0.568790068
+ROSEMEAD                  -1.642140899
+ROSEVILLE                 -0.105110715
+ROSS                      -0.544779235
+ROWLAND HEIGHTS           -1.509233108
+RUNNING SPRINGS            1.013738648
+SACRAMENTO                -1.038737947
+SAINT HELENA               0.211951924
+SALIDA                    -0.320433456
+SALINAS                   -0.883761491
+SALTON CITY               -0.363452254
+SAN ANDREAS                0.757644515
+SAN ANSELMO                0.488130445
+SAN ARDO                  -0.301056151
+SAN BERNARDINO            -0.805576818
+SAN BRUNO                 -1.020555239
+SAN CARLOS                 0.791726415
+SAN CLEMENTE               0.753525709
+SAN DIEGO                  0.061709071
+SAN DIMAS                  0.159914252
+SAN FERNANDO              -2.823254512
+SAN FRANCISCO             -0.459372284
+SAN GABRIEL               -1.355087563
+SANGER                     0.690280984
+SAN GERONIMO               2.586233249
+SAN JACINTO                0.156812732
+SAN JOAQUIN               -0.884325874
+SAN JOSE                  -0.017864372
+SAN JUAN BAUTISTA         -0.573701460
+SAN JUAN CAPISTRANO        1.197282240
+SAN LEANDRO               -0.469214336
+SAN LORENZO               -0.658875045
+SAN LUIS OBISPO            0.142147042
+SAN MARCOS                 0.252199275
+SAN MARINO                -1.865337922
+SAN MARTIN                 0.379482001
+SAN MATEO                 -0.019867331
+SAN MIGUEL                 0.467609227
+SAN PABLO                 -1.095212618
+SAN PEDRO                 -0.661816277
+SAN RAFAEL                -0.570842669
+SAN RAMON                 -0.092173891
+SANTA ANA                 -1.637191042
+SANTA BARBARA              0.296613870
+SANTA CATALINA             0.221860160
+SANTA CLARA                0.432897183
+SANTA CLARITA              0.545322799
+SANTA CRUZ                 1.075394612
+SANTA FE SPRINGS          -0.123808129
+SANTA MARGARITA            0.047811133
+SANTA MARIA               -1.221470352
+SANTA MONICA               1.519046059
+SANTA NELLA                0.452946018
+SANTA PAULA                1.466790107
+SANTA ROSA                -0.333861035
+SANTA YNEZ                 0.401353738
+SANTEE                     0.117846115
+SAN YSIDRO                -2.476706482
+SARATOGA                   0.471115453
+SATICOY                    1.964721430
+SAUGUS                     0.031112073
+SAUSALITO                  0.369996433
+SCOTIA                    -0.284556148
+SCOTTS VALLEY              0.072469763
+SEAL BEACH                 0.025108724
+SEASIDE                    0.176068311
+SEBASTOPOL                 1.848591269
+SEELEY                     0.599630810
+SELMA                     -0.870904027
+SHAFTER                   -0.983474388
+SHANDON                   -1.076683243
+SHASTA                     2.255970773
+SHASTA LAKE                0.047479298
+SHERIDAN                  -0.701315362
+SHERMAN OAKS               0.889799248
+SHINGLE SPRINGS            1.372291056
+SHINGLETOWN               -0.803170774
+SIERRA MADRE               0.969107836
+SIGNAL HILL               -1.658708117
+SIMI VALLEY                2.973052255
+SLOUGHHOUSE               -1.503401822
+SMITH RIVER               -1.001582132
+SNELLING                  -0.189446813
+SOLANA BEACH               0.883284735
+SOLEDAD                   -1.119951960
+SOLVANG                    0.540573146
+SOMERSET                   1.132651280
+SOMIS                      1.575305906
+SONOMA                    -0.526906167
+SONORA                     0.165182132
+SOQUEL                     1.466196081
+SOULSBYVILLE              -0.358654272
+SOUTH EL MONTE            -1.581283688
+SOUTH GATE                -2.705703329
+SOUTH LAKE TAHOE           3.480176601
+SOUTH PASADENA             0.890676677
+SOUTH SAN FRANCISCO       -1.321212078
+SOUTH SAN GABRIEL         -1.121469549
+SPRECKELS                 -0.408916606
+SPRING VALLEY             -0.449459701
+SPRINGVILLE                1.067525762
+STANFORD                  -0.599109450
+STANTON                   -1.501236684
+STEVENSON RANCH            0.113279069
+STEVINSON                  0.638178316
+ST. HELENA                 0.731370553
+STOCKTON                  -0.869954498
+STRATFORD                 -0.380082641
+STRATHMORE                -0.650725219
+STUDIO CITY                1.392253338
+SUISUN                     0.292794242
+SUISUN CITY                0.892365680
+SUMMERLAND                 1.358485975
+SUN CITY                   0.312144645
+SUNLAND                    0.714521724
+SUNNYVALE                 -0.630411522
+SUNOL                      0.257479019
+SUN VALLEY                -1.485161071
+SUSANVILLE                -0.808093461
+SUTTER                    -1.233862503
+SUTTER CREEK               0.883173749
+SYLMAR                    -1.613200649
+TAFT                      -1.523757800
+TAHOE CITY                 1.020439882
+TARZANA                   -0.079735128
+TEHACHAPI                  0.891072313
+TEMECULA                   1.611587907
+TEMPLE CITY               -1.042412015
+TEMPLETON                  0.916785287
+TERMO                      2.687525284
+TERRA BELLA               -0.706525374
+THERMAL                   -1.469550557
+THORNTON                   0.560496545
+THOUSAND OAKS              3.248573659
+THOUSAND PALMS            -1.203810062
+THREE RIVERS               1.209058406
+TIBURON                   -0.561651820
+TIPTON                    -0.440696983
+TOMALES                   -0.986612498
+TOPANGA                    2.173291462
+TORRANCE                  -0.557364119
+TRABUCO CANYON             0.150479058
+TRACY                     -0.244000317
+TRANQUILLITY              -0.339282161
+TRAVER                    -0.206834278
+TRAVIS AFB                -0.391724714
+TRES PINOS                -0.214447657
+TRINIDAD                   0.336826042
+TRONA                     -0.460244611
+TRUCKEE                    0.081484493
+TUJUNGA                   -1.219216148
+TULARE                     1.130720762
+TULELAKE                  -0.970501550
+TUOLUMNE                   0.233829172
+TUPMAN                     0.399137395
+TURLOCK                   -0.463917561
+TUSTIN                    -0.769056063
+TWAIN HARTE               -0.290314978
+TWENTYNINE PALMS          -0.316883713
+TWIN PEAKS                 0.741380276
+UKIAH                     -0.169415610
+UNION CITY                -2.413537641
+UPLAND                     0.141434574
+UPPER LAKE                 1.172545607
+VACAVILLE                 -0.046162993
+VALENCIA                  -0.097743636
+VALINDA                   -1.307541816
+VALLEJO                   -0.948838255
+VALLEY CENTER              1.683350395
+VALLEY GLEN                0.806404166
+VALLEY HOME                0.134287448
+VALLEY SPRINGS            -0.375664264
+VALLEY VILLAGE             0.827614068
+VANDENBERG AFB            -0.860767276
+VANDENBERG AIR FORCE BASE -0.911470152
+VAN NUYS                  -0.607432367
+VENICE                     0.399676038
+VENTURA                    3.436485053
+VICTOR                     0.587833161
+VICTORVILLE                0.211560117
+VILLA PARK                -0.285510274
+VISALIA                    1.914535682
+VISTA                      0.653690001
+WALNUT                    -0.141006782
+WALNUT CREEK               0.759346752
+WALNUT GROVE              -1.142670823
+WALNUT VALLEY              0.450565284
+WARNER SPRINGS            -0.524478842
+WASCO                     -1.502903982
+WATERFORD                  2.268185639
+WATSONVILLE               -1.105254594
+WEAVERVILLE                0.398522966
+WEED                       0.830390633
+WELDON                     0.262366853
+WEST COVINA               -0.855621334
+WEST HILLS                 0.407778100
+WEST HOLLYWOOD             0.658626592
+WESTLAKE VILLAGE           1.303753922
+WESTLEY                   -1.110696515
+WESTMINSTER               -1.071125461
+WESTMORLAND               -0.307412124
+WEST POINT                -0.446978187
+WEST SACRAMENTO           -0.035896932
+WESTWOOD                  -0.574316140
+WHEATLAND                  0.203023848
+WHITETHORN                 2.583052156
+WHITTIER                  -0.493104541
+WILDOMAR                   0.711025997
+WILLIAMS                   0.003270468
+WILLITS                   -0.185787929
+WILLOW CREEK              -0.944305164
+WILLOWS                   -0.700816135
+WILMINGTON                -1.726967390
+WILTON                     0.829620762
+WINCHESTER                 1.318273799
+WINDSOR                   -0.461083408
+WINNETKA                  -1.030452551
+WINTERHAVEN                0.433750754
+WINTERS                    0.224045254
+WINTON                    -0.028085770
+WOODLAKE                  -0.054072650
+WOODLAND                  -1.029901032
+WOODLAND HILLS             1.211186870
+WOODSIDE                  -0.237320041
+WRIGHTWOOD                 0.980632260
+YERMO                      0.072807906
+YORBA LINDA                0.365496354
+YOUNTVILLE                 0.801367326
+YREKA                      0.232192735
+YUBA CITY                 -0.852646935
+YUCAIPA                    0.735798180
+YUCCA VALLEY               0.538642283
+
+$COUNTY
+                (Intercept)
+ALAMEDA         -0.41279479
+ALPINE           0.29703727
+AMADOR           0.81799989
+BUTTE            0.79502799
+CALAVERAS        1.25162219
+COLUSA          -1.20145071
+CONTRA COSTA    -0.45399330
+DEL NORTE        0.81467630
+EL DORADO       -2.05352294
+FRESNO          -0.86744383
+GLENN           -0.38395994
+HUMBOLDT         1.00482203
+IMPERIAL        -1.54414347
+INYO            -0.34002131
+KERN             0.02435400
+KINGS           -0.75167616
+LAKE             0.21218233
+LASSEN           0.29185500
+LOS ANGELES      0.06784372
+MADERA           0.48403628
+MARIN            1.14515285
+MARIPOSA         0.86131090
+MENDOCINO        0.90178996
+MERCED          -0.86469757
+MODOC            0.02875730
+MONO             0.19866157
+MONTEREY        -0.36548491
+NAPA             0.06148948
+NEVADA           1.47444526
+ORANGE           0.25165127
+PLACER           0.68540543
+PLUMAS           0.85165185
+RIVERSIDE       -0.21968780
+SACRAMENTO       0.91680582
+SAN BENITO      -0.62648800
+SAN BERNARDINO   0.07963521
+SAN DIEGO        0.14945601
+SAN FRANCISCO   -0.26653528
+SAN JOAQUIN     -0.33081823
+SAN LUIS OBISPO  0.92654412
+SAN MATEO       -0.18711324
+SANTA BARBARA    0.74049210
+SANTA CLARA     -0.64063715
+SANTA CRUZ       0.47123566
+SHASTA           0.64751409
+SIERRA          -0.28062776
+SISKIYOU         1.21986549
+SOLANO          -0.35677462
+SONOMA           0.63139231
+STANISLAUS       0.38188903
+SUTTER           0.35052251
+TEHAMA           0.60520078
+TRINITY          1.57375603
+TULARE          -1.64709857
+TUOLUMNE         1.41173121
+VENTURA         -2.47219886
+YOLO             0.33960751
+YUBA            -0.45160145
+
+> 
