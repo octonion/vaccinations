@@ -7,11 +7,15 @@ head(rates)
 summary(rates)
 colnames(rates)
 
-# Should be equivalent to:
-#fit <- glmer(cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY/CITY/SCHOOL.CODE) + PUBLIC.PRIVATE, data=rates, family="binomial")
+rates$CITY <- paste(rates$COUNTY, ":" , rates$CITY, sep="")
 
-model0 <- cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY)+(1|CITY) + (1|SCHOOL.CODE)
-model1 <- cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY)+(1|CITY) + (1|SCHOOL.CODE) + PUBLIC.PRIVATE
+rates$SCHOOL <- paste(rates$COUNTY, ":" , rates$CITY, ":", rates$SCHOOL.NAME, sep="")
+
+# Should be equivalent to:
+#fit <- glmer(cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY/CITY/SCHOOL) + PUBLIC.PRIVATE, data=rates, family="binomial")
+
+model0 <- cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY) + (1|CITY) + (1|SCHOOL)
+model1 <- cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY) + (1|CITY) + (1|SCHOOL) + PUBLIC.PRIVATE
 
 fit0 <- glmer(model0, data=rates, family="binomial")
 fit1 <- glmer(model1, data=rates, family="binomial")
