@@ -7,9 +7,8 @@ head(rates)
 summary(rates)
 colnames(rates)
 
-rates$CITY <- paste(rates$COUNTY, ":" , rates$CITY, sep="")
-
 rates$SCHOOL <- paste(rates$COUNTY, ":" , rates$CITY, ":", rates$SCHOOL.NAME, sep="")
+rates$CITY <- paste(rates$COUNTY, ":" , rates$CITY, sep="")
 
 # Should be equivalent to:
 #fit <- glmer(cbind(PBE.,ENROLLMENT-PBE.) ~ (1|COUNTY/CITY/SCHOOL) + PUBLIC.PRIVATE, data=rates, family="binomial")
